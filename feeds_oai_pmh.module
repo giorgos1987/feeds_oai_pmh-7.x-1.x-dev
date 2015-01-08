@@ -33,7 +33,7 @@ function feeds_oai_pmh_feeds_plugins() {
  * Return a "drupalized" hierarchic options form element for the sets in a repository.
  */
 function feeds_oai_pmh_sets_options($sets) {
-  $options = array('*' => t('[all sets]'));
+  $options = array('*' => t('- All sets -'));
   if (is_array($sets)) {
     ksort($sets);
     $last_depth = 0;

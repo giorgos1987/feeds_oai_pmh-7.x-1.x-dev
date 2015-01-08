@@ -37,7 +37,7 @@ function feeds_oai_pmh_identify($baseurl) {
 
   $result = drupal_http_request($url);
   if ($result->code != 200) {
-    $message = 'OAI repository %repo is not avaliable, please check the base URL %url is correct.';
+    $message = 'OAI repository %repo is not available, please check the base URL %url is correct.';
     $args = array('%repo' => $baseurl, '%url' => $baseurl);
     watchdog('feeds_oai_pmh', $message, $args, WATCHDOG_ERROR);
     return array(
@@ -194,17 +194,24 @@ function feeds_oai_pmh_get_sets($baseurl) {
     return FALSE;
   }
   if (isset($xml->error)) {
-    return FALSE;
+    foreach ($xml->error as $error) {
+      $attributes = $error->attributes();
+      if (!isset($attributes['code']) || $attributes['code'] != 'noSetHierarchy') {
+        // Ignore the noSetHierarchy error. Consider any other as fatal.
+        return FALSE;
+      }
+    }
   }
-
-  // Put set names into $sets array
-  foreach ($xml->ListSets->set as $set) {
-    $sets[(string)$set->setSpec]['name'] = (string)$set->setName;
-    if ($set->setDescription) {
-      // TODO: Use SimpleXML instead of regexp
-      $description = $set->setDescription->asXML();
-      $description = preg_replace('/.*?<dc:description>([^<]+)<.dc:description.*/s', '\1', $description);
-      $sets[(string)$set->setSpec]['description'] = $description;
+  else {
+    // Put set names into $sets array
+    foreach ($xml->ListSets->set as $set) {
+      $sets[(string)$set->setSpec]['name'] = (string)$set->setName;
+      if ($set->setDescription) {
+        // TODO: Use SimpleXML instead of regexp
+        $description = $set->setDescription->asXML();
+        $description = preg_replace('/.*?<dc:description>([^<]+)<.dc:description.*/s', '\1', $description);
+        $sets[(string)$set->setSpec]['description'] = $description;
+      }
     }
   }
   return $sets;

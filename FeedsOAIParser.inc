@@ -41,6 +41,12 @@ class FeedsOAIParser extends FeedsParser {
           $result->items[] = $item;
         }
       }
+      else {
+        foreach ($feed['items'] as $index => $item) {
+          // Return the items found in feed.
+          $result->items[] = $item;
+        }
+      }
     }
     
     return $result;
